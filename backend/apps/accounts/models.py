@@ -8,6 +8,13 @@ class AuthorProfile(models.Model):
     bio = models.TextField(blank=True)
     avatar = models.URLField(blank=True)
     website = models.URLField(blank=True)
+    
+    ROLE_CHOICES = (
+        ('admin', 'Administrator'),
+        ('manager', 'Manager'),
+        ('editor', 'Editor'),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='editor')
 
     def __str__(self) -> str:
         return self.display_name or self.user.get_username()

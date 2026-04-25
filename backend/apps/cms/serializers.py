@@ -67,10 +67,30 @@ class PostDetailSerializer(serializers.ModelSerializer):
     excerpt = serializers.CharField(validators=[validate_strict_text], required=False, allow_blank=True)
     
     def validate_content(self, value):
+        import bleach
         # We allow markdown but strictly block wikipedia links in content too
         if 'wikipedia.org' in value.lower() or 'wikipedia.com' in value.lower():
             raise ValidationError("References to Wikipedia are strictly forbidden.")
-        return value
+        
+        # Bleach sanitization to prevent XSS in markdown/HTML content
+        allowed_tags = bleach.ALLOWED_TAGS + [
+            'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'hr',
+            'pre', 'code', 'blockquote', 'img', 'span', 'div',
+            'table', 'thead', 'tbody', 'tr', 'th', 'td'
+        ]
+        allowed_attributes = {
+            **bleach.ALLOWED_ATTRIBUTES,
+            'img': ['src', 'alt', 'title'],
+            'a': ['href', 'title', 'target', 'rel']
+        }
+        
+        sanitized_value = bleach.clean(
+            value,
+            tags=allowed_tags,
+            attributes=allowed_attributes,
+            strip=True
+        )
+        return sanitized_value
 
     class Meta:
         model = Post

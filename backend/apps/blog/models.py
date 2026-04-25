@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
+from simple_history.models import HistoricalRecords
 
 User = get_user_model()
 
@@ -49,7 +51,12 @@ class Tag(models.Model):
 
 
 class Post(models.Model):
-    STATUS_CHOICES = [("draft", "Draft"), ("published", "Published")]
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("review", "In Review"),
+        ("published", "Published"),
+        ("scheduled", "Scheduled"),
+    ]
 
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, max_length=200, blank=True)
@@ -73,6 +80,7 @@ class Post(models.Model):
     og_image = models.ImageField(upload_to="og/", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["-published_at"]
@@ -88,6 +96,8 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        if self.status == "published" and not self.published_at:
+            self.published_at = timezone.now()
         if not self.meta_title:
             self.meta_title = self.title[:60]
         if not self.meta_description and self.excerpt:

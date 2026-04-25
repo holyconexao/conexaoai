@@ -2,30 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Save, Image as ImageIcon, Settings, Tag, Globe, ArrowLeft, Loader2, FileText, Eye, Edit3 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Save, Image as ImageIcon, Settings, Tag, Globe, ArrowLeft, Loader2, FileText, Eye, Edit3, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cmsFetch } from "@/lib/cms-api";
 
+// Validation Schema
+const postSchema = z.object({
+  title: z.string().min(5, "O título deve ter pelo menos 5 caracteres").max(200),
+  slug: z.string().optional().or(z.literal("")),
+  excerpt: z.string().max(500, "O resumo não deve exceder 500 caracteres").optional().or(z.literal("")),
+  content: z.string().min(10, "O conteúdo deve ter pelo menos 10 caracteres"),
+  status: z.enum(["draft", "published"]),
+  category: z.string().optional().or(z.literal("")),
+  author: z.string().min(1, "O autor é obrigatório"),
+  meta_title: z.string().max(70, "O meta título não deve exceder 70 caracteres").optional().or(z.literal("")),
+  meta_description: z.string().max(160, "A meta descrição não deve exceder 160 caracteres").optional().or(z.literal("")),
+  is_featured: z.boolean().default(false),
+  published_at: z.string().optional().or(z.literal("")),
+});
+
+type PostFormValues = z.infer<typeof postSchema>;
+
 interface Category { id: number; name: string; }
 interface Author { id: number; user: { username: string }; }
 
-interface PostData {
-  title?: string;
-  slug?: string;
-  excerpt?: string;
-  content?: string;
-  status?: string;
-  category?: string | number;
-  author?: string | number;
-  meta_title?: string;
-  meta_description?: string;
-  is_featured?: boolean;
-}
-
 interface PostFormProps {
-  initialData?: PostData;
+  initialData?: any;
   postId?: string;
 }
 
@@ -34,22 +41,35 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
-
-  // Form State
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [slug, setSlug] = useState(initialData?.slug || "");
-  const [excerpt, setExcerpt] = useState(initialData?.excerpt || "");
-  const [content, setContent] = useState(initialData?.content || "");
   const [isPreview, setIsPreview] = useState(false);
-  const [status, setStatus] = useState(initialData?.status || "draft");
-  const [categoryId, setCategoryId] = useState(initialData?.category ? String(initialData.category) : "");
-  const [authorId, setAuthorId] = useState(initialData?.author ? String(initialData.author) : "");
-  const [metaTitle, setMetaTitle] = useState(initialData?.meta_title || "");
-  const [metaDescription, setMetaDescription] = useState(initialData?.meta_description || "");
-  const [isFeatured, setIsFeatured] = useState(initialData?.is_featured || false);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<PostFormValues>({
+    resolver: zodResolver(postSchema),
+    defaultValues: {
+      title: initialData?.title || "",
+      slug: initialData?.slug || "",
+      excerpt: initialData?.excerpt || "",
+      content: initialData?.content || "",
+      status: initialData?.status || "draft",
+      category: initialData?.category ? String(initialData.category) : "",
+      author: initialData?.author ? String(initialData.author) : "",
+      meta_title: initialData?.meta_title || "",
+      meta_description: initialData?.meta_description || "",
+      is_featured: initialData?.is_featured || false,
+      published_at: initialData?.published_at || "",
+    },
+  });
+
+  const content = watch("content");
+  const status = watch("status");
 
   useEffect(() => {
-    // Load metadata for selects
     async function loadFormMetadata() {
       try {
         const [catRes, authRes] = await Promise.all([
@@ -65,21 +85,15 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
     loadFormMetadata();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: PostFormValues) => {
     setIsSubmitting(true);
     
     const payload = {
-      title,
-      slug: slug || undefined, // backend auto-generates if empty
-      excerpt,
-      content,
-      status,
-      category: categoryId ? parseInt(categoryId) : null,
-      author: authorId ? parseInt(authorId) : null,
-      meta_title: metaTitle,
-      meta_description: metaDescription,
-      is_featured: isFeatured,
+      ...data,
+      slug: data.slug || undefined,
+      category: data.category ? parseInt(data.category) : null,
+      author: data.author ? parseInt(data.author) : null,
+      published_at: data.published_at || null,
     };
 
     try {
@@ -105,7 +119,7 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 pb-24">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-24">
       {/* Header Actions */}
       <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm sticky top-0 z-20">
         <div className="flex items-center gap-4">
@@ -118,12 +132,13 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
         </div>
         <div className="flex items-center gap-3">
           <select 
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            {...register("status")}
             className="text-sm font-medium bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
           >
             <option value="draft">Rascunho</option>
+            <option value="review">Em Revisão</option>
             <option value="published">Publicado</option>
+            <option value="scheduled">Agendado</option>
           </select>
           <button 
             type="submit" 
@@ -137,9 +152,7 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content Column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Conteúdo Section */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4 text-slate-900 font-bold text-lg">
               <FileText className="w-5 h-5 text-emerald-600" />
@@ -150,19 +163,17 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
                 <label className="block text-sm font-medium text-slate-700 mb-1">Título do Artigo</label>
                 <input 
                   type="text" 
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full text-lg px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  {...register("title")}
+                  className={`w-full text-lg px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${errors.title ? 'border-red-500 bg-red-50' : 'border-slate-300'}`}
                   placeholder="Ex: Como a IA está a revolucionar a produtividade..."
                 />
+                {errors.title && <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.title.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Slug (URL)</label>
                 <input 
                   type="text" 
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
+                  {...register("slug")}
                   className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono text-slate-600"
                   placeholder="Deixar em branco para auto-gerar"
                 />
@@ -171,15 +182,15 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
                 <label className="block text-sm font-medium text-slate-700 mb-1">Resumo (Excerpt)</label>
                 <textarea 
                   rows={3}
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
+                  {...register("excerpt")}
                   className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  placeholder="Breve resumo do artigo (usado também na meta description fallback)"
+                  placeholder="Breve resumo do artigo"
                 />
+                {errors.excerpt && <p className="mt-1 text-xs text-red-500">{errors.excerpt.message}</p>}
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-slate-700">Corpo do Artigo (Markdown/Texto)</label>
+                  <label className="block text-sm font-medium text-slate-700">Corpo do Artigo (Markdown)</label>
                   <button 
                     type="button" 
                     onClick={() => setIsPreview(!isPreview)}
@@ -196,19 +207,17 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
                   </div>
                 ) : (
                   <textarea 
-                    required
                     rows={16}
-                    value={content as string}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="w-full text-sm px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono"
-                    placeholder="Escreva o conteúdo do seu artigo em Markdown..."
+                    {...register("content")}
+                    className={`w-full text-sm px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono ${errors.content ? 'border-red-500 bg-red-50' : 'border-slate-300'}`}
+                    placeholder="Escreva o conteúdo em Markdown..."
                   />
                 )}
+                {errors.content && <p className="mt-1 text-xs text-red-500">{errors.content.message}</p>}
               </div>
             </div>
           </div>
           
-          {/* SEO Section */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4 text-slate-900 font-bold text-lg">
               <Globe className="w-5 h-5 text-emerald-600" />
@@ -219,8 +228,7 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
                 <label className="block text-sm font-medium text-slate-700 mb-1">Meta Title</label>
                 <input 
                   type="text" 
-                  value={metaTitle}
-                  onChange={(e) => setMetaTitle(e.target.value)}
+                  {...register("meta_title")}
                   className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
@@ -228,8 +236,7 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
                 <label className="block text-sm font-medium text-slate-700 mb-1">Meta Description</label>
                 <textarea 
                   rows={2}
-                  value={metaDescription}
-                  onChange={(e) => setMetaDescription(e.target.value)}
+                  {...register("meta_description")}
                   className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
@@ -237,9 +244,7 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
           </div>
         </div>
 
-        {/* Sidebar Column */}
         <div className="space-y-6">
-          {/* Estrutura Section */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4 text-slate-900 font-bold text-lg">
               <Tag className="w-5 h-5 text-emerald-600" />
@@ -249,8 +254,7 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
                 <select 
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
+                  {...register("category")}
                   className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Sem categoria</option>
@@ -262,21 +266,19 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Autor</label>
                 <select 
-                  required
-                  value={authorId}
-                  onChange={(e) => setAuthorId(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  {...register("author")}
+                  className={`w-full text-sm px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${errors.author ? 'border-red-500' : 'border-slate-300'}`}
                 >
                   <option value="">Selecionar autor...</option>
                   {authors.map((a) => (
                     <option key={a.id} value={a.id}>{a.user.username}</option>
                   ))}
                 </select>
+                {errors.author && <p className="mt-1 text-xs text-red-500">{errors.author.message}</p>}
               </div>
             </div>
           </div>
 
-          {/* Publicação Settings */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4 text-slate-900 font-bold text-lg">
               <Settings className="w-5 h-5 text-emerald-600" />
@@ -287,20 +289,27 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
                 <input 
                   type="checkbox" 
                   id="featured"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  {...register("is_featured")}
                   className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
                 />
                 <label htmlFor="featured" className="ml-2 text-sm text-slate-700 font-medium">Destacar na Home</label>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Data de Publicação</label>
+                <input 
+                  type="datetime-local" 
+                  {...register("published_at")}
+                  className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">Obrigatório para estados "Publicado" ou "Agendado".</p>
+              </div>
             </div>
           </div>
 
-          {/* Media Placeholder */}
           <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
             <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
             <h3 className="text-sm font-semibold text-slate-700">Imagem Destacada</h3>
-            <p className="text-xs text-slate-500 mt-1">A gestão de media Cloudinary será ativada na V2.</p>
+            <p className="text-xs text-slate-500 mt-1">Gestão Cloudinary na V2.</p>
           </div>
         </div>
       </div>
