@@ -34,3 +34,9 @@ frontend/.vercel/
 .idea/
 .vscode/
 opencode/
+
+# Project specifications
+/*.md
+!/README.md
+frontend/AGENTS.md
+frontend/CLAUDE.md
