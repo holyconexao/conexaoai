@@ -64,7 +64,7 @@ Build a high-performance, SEO-optimized, scalable blog and content platform focu
 1. **API-first** — Next.js never touches the database directly. All data flows through DRF endpoints.
 2. **SSG by default** — Blog posts are statically generated at build time. ISR handles updates without redeploys.
 3. **Decoupled** — Backend and frontend deploy independently and can be scaled or swapped separately.
-4. **Django Admin as CMS** — No external headless CMS dependency. The built-in admin, customized, covers all content management needs.
+4. **Custom Next.js CMS** — The platform uses a bespoke editorial backoffice built in Next.js (under `/cms`). The Django Admin acts only as a technical fallback.
 5. **SQLite → PostgreSQL** — Zero code change required. A single environment variable switches the database engine.
 6. **Modular Django apps** — Each feature domain (`blog`, `accounts`, `newsletter`) is its own Django app, ready for future extraction into microservices.
 
@@ -93,7 +93,7 @@ Current baseline:
 - Django + SQLite → PostgreSQL on Railway
 - Next.js on Vercel hobby plan
 - Cloudinary free tier for media
-- Django Admin as full CMS
+- Custom Next.js CMS for editorial operation
 
 ### Phase 2 — Growth (10k–100k visitors/mo)
 - Redis for API response caching

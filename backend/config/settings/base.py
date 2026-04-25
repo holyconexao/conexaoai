@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "apps.blog",
     "apps.accounts",
     "apps.newsletter",
+    "apps.cms",
 ]
 
 MIDDLEWARE = [

@@ -59,6 +59,7 @@ npm run dev
 ```bash
 # 1. Crie conta em railway.app
 # 2. Conecte seu repositório GitHub
+# 3. Configure a branch de produção como `main`
 # 3. Adicione as variáveis de ambiente no painel do Railway:
 
 SECRET_KEY=sua-chave-secreta
@@ -70,8 +71,9 @@ CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
 CORS_ALLOWED_ORIGINS=https://conexao.ai
 
-# 4. Railway detecta o Dockerfile e faz deploy automático
+# 4. Railway detecta o Dockerfile e faz deploy automático a cada push/merge no GitHub
 # 5. O startCommand no railway.toml roda as migrations automaticamente
+# 6. Não use deploy manual como processo principal; a origem da release deve ser o commit no GitHub
 ```
 
 ---
@@ -81,6 +83,7 @@ CORS_ALLOWED_ORIGINS=https://conexao.ai
 ```bash
 # 1. Crie conta em vercel.com
 # 2. Importe o repositório do frontend
+# 3. Configure Production Branch = `main`
 # 3. Adicione as variáveis de ambiente no painel da Vercel:
 
 NEXT_PUBLIC_API_URL=https://sua-api.railway.app/api
@@ -88,7 +91,8 @@ NEXT_PUBLIC_SITE_URL=https://conexao.ai
 NEXT_PUBLIC_SITE_NAME=Conexao AI
 
 # 4. Vercel detecta Next.js e configura tudo automaticamente
-# 5. Deploy disponível em: https://conexao.ai
+# 5. Cada merge em `main` no GitHub deve gerar um deploy automático
+# 6. Deploy disponível em: https://conexao.ai
 ```
 
 ---
@@ -151,6 +155,10 @@ export DJANGO_SETTINGS_MODULE=config.settings.production
 
 ## Checklist de Go-Live
 
+- [ ] Repositório conectado ao GitHub
+- [ ] Branch `main` protegida no GitHub
+- [ ] Pull Requests obrigatórios antes de merge
+- [ ] GitHub Actions obrigatórias antes de merge
 - [ ] `SECRET_KEY` forte e único em produção
 - [ ] `DEBUG=False` em produção
 - [ ] PostgreSQL configurado e migrations rodadas
@@ -158,6 +166,8 @@ export DJANGO_SETTINGS_MODULE=config.settings.production
 - [ ] CORS configurado para aceitar apenas o domínio do frontend
 - [ ] HTTPS ativo (Railway e Vercel fazem isso automaticamente)
 - [ ] Domínio custom configurado
+- [ ] Vercel a fazer deploy automático a partir da branch `main`
+- [ ] Railway a fazer deploy automático a partir da branch `main`
 - [ ] Google Search Console verificado com sitemap submetido
 - [ ] Google Analytics configurado
 - [ ] Primeiro post publicado

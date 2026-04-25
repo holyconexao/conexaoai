@@ -8,7 +8,7 @@ export function Footer() {
     <footer className="border-t border-[var(--line)] bg-white">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-xl space-y-3">
-          <BrandLogo className="h-10 w-auto sm:h-12" variant="full" />
+          <BrandLogo className="h-8 w-auto sm:h-10" variant="full" />
           <p className="text-sm leading-7 text-[var(--muted)]">
             Connecting ideas, building the future with practical analysis on AI, business, tools
             and systems designed for operators.
