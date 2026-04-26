@@ -28,9 +28,18 @@ class SubscriberSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'is_superuser']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'is_superuser', 'role']
+
+    def get_role(self, obj):
+        if obj.is_superuser:
+            return 'admin'
+        if hasattr(obj, 'author'):
+            return obj.author.role
+        return 'viewer'
 
 class CategorySerializer(serializers.ModelSerializer):
     name = serializers.CharField(validators=[validate_strict_text])
@@ -66,6 +75,25 @@ class PostDetailSerializer(serializers.ModelSerializer):
     title = serializers.CharField(validators=[validate_strict_text])
     excerpt = serializers.CharField(validators=[validate_strict_text], required=False, allow_blank=True)
     
+    def validate(self, data):
+        request = self.context.get('request')
+        if not request:
+            return data
+
+        status = data.get('status')
+        user = request.user
+
+        # If user is an Author (not editor/manager/admin/superuser), 
+        # they cannot set status to 'published' or 'scheduled' directly.
+        is_author_only = not user.is_superuser and hasattr(user, 'author') and user.author.role == 'author'
+        
+        if is_author_only and status in ['published', 'scheduled']:
+            raise ValidationError({
+                "status": "As autores não podem publicar diretamente. Por favor, envie para 'Em Revisão'."
+            })
+
+        return data
+
     def validate_content(self, value):
         import bleach
         # We allow markdown but strictly block wikipedia links in content too

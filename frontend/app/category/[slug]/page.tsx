@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { Breadcrumb } from "@/components/layout/Breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { PostCard } from "@/components/blog/PostCard";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { api } from "@/lib/api";
@@ -82,18 +91,29 @@ export default async function CategoryPage({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
       <JsonLd data={breadcrumbSchema} />
-      <Breadcrumb
-        items={[
-          { href: "/", label: "Inicio" },
-          { href: "/blog", label: "Blog" },
-          { label: category.name },
-        ]}
-      />
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Inicio</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/blog">Blog</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{category.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <section className="max-w-3xl space-y-4">
-        <p className="text-sm uppercase tracking-[0.16em] text-[var(--accent-strong)]">Categoria</p>
-        <h1 className="font-display text-5xl leading-[0.98]">{category.name}</h1>
-        <p className="text-lg leading-8 text-[var(--muted)]">{category.description}</p>
+        <Badge variant="secondary" className="uppercase tracking-[0.16em]">
+          Categoria
+        </Badge>
+        <h1 className="font-display text-5xl leading-[0.98] text-foreground">{category.name}</h1>
+        <p className="text-lg leading-8 text-muted-foreground">{category.description}</p>
       </section>
+      <Separator />
       <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {posts.results.map((post) => (
           <PostCard key={post.id} post={post} />

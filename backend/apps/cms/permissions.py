@@ -1,19 +1,42 @@
 from rest_framework import permissions
 
+
 class IsAdminUser(permissions.BasePermission):
+    """Allows access only to users with the 'admin' CMS role."""
+
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and 
-                    hasattr(request.user, 'author_profile') and 
-                    request.user.author_profile.role == 'admin')
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.is_superuser:
+            return True
+        return hasattr(request.user, "author") and request.user.author.role == "admin"
+
 
 class IsManagerUser(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and 
-                    hasattr(request.user, 'author_profile') and 
-                    request.user.author_profile.role in ['admin', 'manager'])
+    """Allows access to users with 'admin' or 'manager' CMS roles."""
 
-class IsEditorUser(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and 
-                    hasattr(request.user, 'author_profile') and 
-                    request.user.author_profile.role in ['admin', 'manager', 'editor'])
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.is_superuser:
+            return True
+        return hasattr(request.user, "author") and request.user.author.role in [
+            "admin",
+            "manager",
+        ]
+
+
+class IsCmsRegularUser(permissions.BasePermission):
+    """Allows access to any authenticated user with a CMS role (admin, manager, editor)."""
+
+    def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.is_superuser:
+            return True
+        return hasattr(request.user, "author") and request.user.author.role in [
+            "admin",
+            "manager",
+            "editor",
+            "author",
+        ]

@@ -10,7 +10,7 @@ from .serializers import (
     AuthorSerializer, UserSerializer,
     MediaAssetSerializer, SubscriberSerializer
 )
-from .permissions import IsAdminUser, IsManagerUser, IsEditorUser
+from .permissions import IsAdminUser, IsManagerUser, IsCmsRegularUser
 
 class IsCmsUser(permissions.BasePermission):
     """
@@ -21,7 +21,7 @@ class IsCmsUser(permissions.BasePermission):
             return False
         if request.user.is_superuser:
             return True
-        return hasattr(request.user, 'author_profile') and request.user.author_profile.role in ['admin', 'manager', 'editor']
+        return hasattr(request.user, 'author') and request.user.author.role in ['admin', 'manager', 'editor', 'author']
 
 @api_view(['GET'])
 @permission_classes([IsCmsUser])
@@ -30,12 +30,33 @@ def current_cms_user(request):
     return Response(serializer.data)
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().select_related('category', 'author__user')
-    permission_classes = [IsEditorUser]
+    permission_classes = [IsCmsRegularUser]
     filterset_fields = ['status', 'category', 'author', 'is_featured']
     search_fields = ['title', 'excerpt', 'content']
     ordering_fields = ['published_at', 'created_at', 'title']
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return Post.objects.all().select_related('category', 'author__user')
+        
+        # Admin, Manager and Editor see everything
+        if hasattr(user, 'author') and user.author.role in ['admin', 'manager', 'editor']:
+            return Post.objects.all().select_related('category', 'author__user')
+        
+        # Regular authors only see their own posts
+        if hasattr(user, 'author') and user.author.role == 'author':
+            return Post.objects.filter(author=user.author).select_related('category', 'author__user')
+            
+        return Post.objects.none()
+
+    def perform_create(self, serializer):
+        # Auto-assign author if not provided and user has author profile
+        if 'author' not in serializer.validated_data and hasattr(self.request.user, 'author'):
+            serializer.save(author=self.request.user.author)
+        else:
+            serializer.save()
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -96,7 +117,7 @@ class AuthorViewSet(viewsets.ModelViewSet):
 class MediaAssetViewSet(viewsets.ModelViewSet):
     queryset = MediaAsset.objects.all().order_by('-created_at')
     serializer_class = MediaAssetSerializer
-    permission_classes = [IsEditorUser]
+    permission_classes = [IsCmsRegularUser]
 
 class SubscriberViewSet(viewsets.ModelViewSet):
     queryset = Subscriber.objects.all().order_by('-subscribed_at')
@@ -104,3 +125,39 @@ class SubscriberViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
     search_fields = ['email', 'name']
     filterset_fields = ['is_active', 'confirmed']
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def track_click(request):
+    """
+    Public endpoint to track user clicks for the heatmap.
+    """
+    path = request.data.get('path', '/')
+    x = request.data.get('x_percent')
+    y = request.data.get('y_percent')
+    device = request.data.get('device_type', 'desktop')
+    browser = request.data.get('browser', 'unknown')
+    
+    if x is not None and y is not None:
+        from .models import ClickEvent
+        ClickEvent.objects.create(
+            path=path, 
+            x_percent=x, 
+            y_percent=y,
+            device_type=device,
+            browser=browser
+        )
+        return Response(status=status.HTTP_201_CREATED)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsCmsUser])
+def click_stats(request):
+    """
+    CMS endpoint to get click data for visualization.
+    """
+    from .models import ClickEvent
+    path = request.query_params.get('path', '/')
+    # Return last 1000 clicks for the specific path
+    clicks = ClickEvent.objects.filter(path=path)[:1000].values('x_percent', 'y_percent')
+    return Response(list(clicks))

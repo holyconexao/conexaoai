@@ -1,16 +1,17 @@
 import Link from "next/link";
-
 import { primaryNav } from "@/lib/site";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-export function Nav() {
+export function Nav({ className = "" }: { className?: string }) {
   return (
-    <nav className="flex items-center gap-2 overflow-x-auto pb-1">
+    <nav className={cn("flex items-center gap-1", className)}>
       {primaryNav.map((item) => (
-        <Link key={item.href} className="transition hover:text-[var(--foreground)]" href={item.href}>
-          <span className="inline-flex whitespace-nowrap rounded-full border border-transparent px-3 py-2 text-sm font-medium text-[var(--muted)] transition hover:border-[var(--line)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]">
+        <Button key={item.href} asChild variant="ghost" className="h-auto font-bold tracking-tight text-muted-foreground hover:text-foreground">
+          <Link href={item.href}>
             {item.label}
-          </span>
-        </Link>
+          </Link>
+        </Button>
       ))}
     </nav>
   );

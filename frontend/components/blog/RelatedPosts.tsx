@@ -9,10 +9,10 @@ export function RelatedPosts({ posts }: { posts: Post[] }) {
   return (
     <section className="space-y-6">
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
           Related
         </p>
-        <h2 className="font-display text-4xl leading-none text-[var(--foreground)]">
+        <h2 className="font-display text-4xl leading-none text-foreground">
           Continue reading
         </h2>
       </div>

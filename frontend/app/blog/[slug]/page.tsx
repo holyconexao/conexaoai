@@ -7,7 +7,18 @@ import { ArticleToc } from "@/components/blog/ArticleToc";
 import { PostBody } from "@/components/blog/PostBody";
 import { PostMeta } from "@/components/blog/PostMeta";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
-import { Breadcrumb } from "@/components/layout/Breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { api } from "@/lib/api";
 import { absoluteUrl, buildArticleContentModel, extractFaqFromHtml } from "@/lib/utils";
@@ -113,30 +124,46 @@ export default async function PostPage({
     <>
       <JsonLd data={articleSchema} />
       {faqSchema ? <JsonLd data={faqSchema} /> : null}
-      <section className="border-b border-[var(--line)] bg-white">
+      <section className="bg-background">
         <div className="mx-auto w-full max-w-7xl px-6 py-12">
-          <Breadcrumb
-            items={[
-              { href: "/", label: "Inicio" },
-              { href: "/blog", label: "Blog" },
-              ...(post.category ? [{ href: `/category/${post.category.slug}`, label: post.category.name }] : []),
-              { label: post.title },
-            ]}
-          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Inicio</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/blog">Blog</BreadcrumbLink>
+              </BreadcrumbItem>
+              {post.category && (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href={`/category/${post.category.slug}`}>
+                      {post.category.name}
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                </>
+              )}
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{post.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="mt-8 max-w-4xl space-y-6">
-            <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+            <div className="flex flex-wrap items-center gap-3">
               {post.category ? (
-                <Link
-                  className="rounded-full bg-[rgba(37,99,235,0.08)] px-3 py-1 text-[var(--accent-strong)]"
-                  href={`/category/${post.category.slug}`}
-                >
-                  {post.category.name}
+                <Link href={`/category/${post.category.slug}`}>
+                  <Badge variant="secondary">
+                    {post.category.name}
+                  </Badge>
                 </Link>
               ) : null}
-              <span>Article</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Article</span>
             </div>
-            <h1 className="font-display text-5xl leading-[0.95] text-[var(--foreground)] sm:text-6xl">
+            <h1 className="font-display text-5xl leading-[0.95] text-foreground sm:text-6xl">
               {post.title}
             </h1>
             {post.excerpt ? (
@@ -146,7 +173,7 @@ export default async function PostPage({
           </div>
 
           {post.featured_image ? (
-            <div className="relative mt-10 aspect-[16/8] overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface)]">
+            <div className="relative mt-10 aspect-[16/8] overflow-hidden rounded-lg border bg-muted">
               <Image
                 src={post.featured_image}
                 alt={post.featured_image_alt || post.title}
@@ -157,6 +184,7 @@ export default async function PostPage({
             </div>
           ) : null}
         </div>
+        <Separator />
       </section>
 
       <section className="mx-auto w-full max-w-7xl px-6 py-12">
@@ -169,67 +197,69 @@ export default async function PostPage({
             ) : null}
 
             {post.excerpt ? (
-              <section className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
-                  In brief
-                </p>
-                <p className="mt-3 text-base leading-8 text-[var(--muted)]">{post.excerpt}</p>
-              </section>
+              <Card className="bg-muted/50 border-none shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                    In brief
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-base leading-8 text-muted-foreground">{post.excerpt}</p>
+                </CardContent>
+              </Card>
             ) : null}
 
             <PostBody html={article.html} />
 
-            <section className="rounded-lg border border-[var(--line)] bg-white p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
-                Next step
-              </p>
-              <h2 className="font-display mt-3 text-4xl leading-none text-[var(--foreground)]">
-                Get the next practical breakdown.
-              </h2>
-              <p className="mt-3 max-w-2xl text-base leading-8 text-[var(--muted)]">
-                Join the newsletter for weekly analysis on AI, tools, business leverage and
-                operating systems designed for people who prefer clarity over noise.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link
-                  className="inline-flex rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
-                  href="/newsletter"
-                >
-                  Join newsletter
+            <Card className="bg-card">
+              <CardHeader>
+                <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  Next step
+                </CardTitle>
+                <h2 className="font-display mt-3 text-4xl leading-none text-foreground">
+                  Get the next practical breakdown.
+                </h2>
+                <CardDescription className="mt-3 max-w-2xl text-base leading-8">
+                  Join the newsletter for weekly analysis on AI, tools, business leverage and
+                  operating systems designed for people who prefer clarity over noise.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-3">
+                <Link href="/newsletter">
+                  <Button className="px-8">Join newsletter</Button>
                 </Link>
-                <Link
-                  className="inline-flex rounded-lg border border-[var(--line)] px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface)]"
-                  href="/blog"
-                >
-                  Read more insights
+                <Link href="/blog">
+                  <Button variant="outline" className="px-8">Read more insights</Button>
                 </Link>
-              </div>
-            </section>
+              </CardContent>
+            </Card>
           </div>
 
           <aside className="hidden xl:flex xl:flex-col xl:gap-6">
             <ArticleToc headings={article.headings} />
-            <div className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
-                Stay close
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-                Weekly analysis on AI, business systems and tools with a clean editorial format and
-                high information density.
-              </p>
-              <Link
-                className="mt-4 inline-flex rounded-lg bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent)]"
-                href="/newsletter"
-              >
-                Join newsletter
-              </Link>
-            </div>
+            <Card className="bg-muted/50 border-none shadow-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  Stay close
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  Weekly analysis on AI, business systems and tools with a clean editorial format and
+                  high information density.
+                </p>
+                <Link href="/newsletter">
+                  <Button className="mt-4 w-full">Join newsletter</Button>
+                </Link>
+              </CardContent>
+            </Card>
           </aside>
         </div>
       </section>
 
       {related.length > 0 ? (
-        <section className="border-t border-[var(--line)] bg-white">
+        <section className="bg-background">
+          <Separator />
           <div className="mx-auto w-full max-w-7xl px-6 py-12">
             <RelatedPosts posts={related} />
           </div>

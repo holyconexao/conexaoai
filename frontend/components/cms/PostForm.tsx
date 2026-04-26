@@ -26,13 +26,13 @@ const postSchema = z.object({
   published_at: z.string().optional().or(z.literal("")),
 });
 
-type PostFormValues = z.infer<typeof postSchema>;
+type PostFormValues = z.input<typeof postSchema>;
 
 interface Category { id: number; name: string; }
 interface Author { id: number; user: { username: string }; }
 
 interface PostFormProps {
-  initialData?: any;
+  initialData?: Partial<PostFormValues> & { category?: number | string; author?: number | string };
   postId?: string;
 }
 
@@ -47,7 +47,6 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
     register,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
@@ -66,8 +65,8 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const content = watch("content");
-  const status = watch("status");
 
   useEffect(() => {
     async function loadFormMetadata() {
@@ -301,7 +300,7 @@ export default function PostForm({ initialData, postId }: PostFormProps) {
                   {...register("published_at")}
                   className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
-                <p className="text-[10px] text-slate-500 mt-1">Obrigatório para estados "Publicado" ou "Agendado".</p>
+                <p className="text-[10px] text-slate-500 mt-1">Obrigatório para estados &ldquo;Publicado&rdquo; ou &ldquo;Agendado&rdquo;.</p>
               </div>
             </div>
           </div>

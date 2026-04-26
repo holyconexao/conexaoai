@@ -8,7 +8,15 @@ User = get_user_model()
 
 
 class Author(models.Model):
+    ROLE_CHOICES = [
+        ("admin", "Administrator"),
+        ("manager", "Manager"),
+        ("editor", "Editor"),
+        ("author", "Author"),
+        ("viewer", "Viewer"),
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="author")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="author")
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="authors/", blank=True)
     website = models.URLField(blank=True)

@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { Manrope, Newsreader } from "next/font/google";
+import { Manrope, Newsreader, Geist } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -62,16 +66,21 @@ const websiteSchema = {
   },
 };
 
+import { BehavioralTracker } from "@/components/analytics/BehavioralTracker";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className={`${manrope.variable} ${newsreader.variable}`}>
+    <html lang="pt-BR" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+      <body className={`${manrope.variable} ${newsreader.variable}`} suppressHydrationWarning>
+        <BehavioralTracker />
         <JsonLd data={websiteSchema} />
-        <div className="flex min-h-screen flex-col bg-[var(--background)]">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+        <TooltipProvider>
+          <div className="flex min-h-screen flex-col bg-background">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+        </TooltipProvider>
       </body>
     </html>
   );

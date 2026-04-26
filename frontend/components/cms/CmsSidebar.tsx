@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut
 } from "lucide-react";
+import { BrandLogo } from "../layout/BrandLogo";
 
 export default function CmsSidebar() {
   const navItems = [
@@ -23,9 +24,9 @@ export default function CmsSidebar() {
 
   return (
     <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col h-screen shrink-0 border-r border-slate-800">
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
-        <span className="text-white font-bold text-lg tracking-tight">Conexão AI</span>
-        <span className="ml-2 text-xs font-semibold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">CMS</span>
+      <div className="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+        <BrandLogo className="h-6 w-24 brightness-0 invert" />
+        <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">CMS</span>
       </div>
       
       <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">

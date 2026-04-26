@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState, useCallback } from "react";
 import { Info, Loader2 } from "lucide-react";
 import { cmsFetch } from "@/lib/cms-api";
 
@@ -21,26 +21,26 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   subtitle = "Frequência de publicações e revisões no último ano"
 }) => {
   const [fetchedData, setFetchedData] = useState<ActivityData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
 
-  useEffect(() => {
-    async function loadActivity() {
-      try {
-        const result = await cmsFetch<ActivityData[]>("/posts/activity/");
-        setFetchedData(result);
-      } catch (error) {
-        console.error("Failed to fetch activity data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (!initialData) {
-      loadActivity();
-    } else {
+  const loadActivity = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await cmsFetch<ActivityData[]>("/posts/activity/");
+      setFetchedData(result);
+    } catch (error) {
+      console.error("Failed to fetch activity data:", error);
+    } finally {
       setLoading(false);
     }
-  }, [initialData]);
+  }, []);
+
+  useEffect(() => {
+    if (!initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadActivity();
+    }
+  }, [initialData, loadActivity]);
 
   // Generate display data
   const activityMap = useMemo(() => {
@@ -50,13 +50,15 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     if (dataToUse.length > 0) {
       dataToUse.forEach(item => map.set(item.date, item.count));
     } else if (!loading) {
-      // Mock data generation as fallback if no real data and not loading
+      // Deterministic mock data fallback (seeded by day index)
       const today = new Date();
       for (let i = 0; i < 365; i++) {
         const d = new Date();
         d.setDate(today.getDate() - i);
         const dateStr = d.toISOString().split("T")[0];
-        const count = Math.random() > 0.85 ? Math.floor(Math.random() * 3) + 1 : 0;
+        // Deterministic pseudo-random based on day index
+        const seed = ((i * 31 + 7) % 20);
+        const count = seed >= 17 ? ((i * 13 + 5) % 3) + 1 : 0;
         map.set(dateStr, count);
       }
     }
@@ -73,7 +75,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     const startDay = startDate.getDay();
     startDate.setDate(startDate.getDate() - startDay);
 
-    let currentDay = new Date(startDate);
+    const currentDay = new Date(startDate);
     
     for (let w = 0; w < 53; w++) {
       const week = [];

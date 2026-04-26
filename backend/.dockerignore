@@ -3,8 +3,11 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 .env
+.env.*
 venv/
 db.sqlite3
 devserver.log
@@ -12,3 +15,7 @@ devserver.err.log
 
 media/
 staticfiles/
+
+# Legacy unused scaffold
+core/
+blog/

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Upload, Image as ImageIcon, Trash2 } from "lucide-react";
 import { cmsFetch } from "@/lib/cms-api";
 
@@ -16,7 +16,7 @@ export default function CmsMediaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
 
-  async function loadMedia() {
+  const loadMedia = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await cmsFetch<{results: MediaAsset[]} | MediaAsset[]>("/media/");
@@ -26,12 +26,12 @@ export default function CmsMediaPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadMedia();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadMedia]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;

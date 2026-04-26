@@ -1,5 +1,6 @@
 import { FileText, Tags, Users, TrendingUp } from "lucide-react";
 import ActivityHeatmap from "@/components/cms/ActivityHeatmap";
+import BehavioralHeatmap from "@/components/cms/BehavioralHeatmap";
 
 export const metadata = {
   title: "Dashboard CMS | Conexão AI",
@@ -40,8 +41,9 @@ export default function CmsDashboardPage() {
         ))}
       </div>
 
-      <div className="mt-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
         <ActivityHeatmap />
+        <BehavioralHeatmap />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

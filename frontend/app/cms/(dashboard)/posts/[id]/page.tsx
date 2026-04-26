@@ -14,7 +14,7 @@ export default function EditPostPage() {
   useEffect(() => {
     async function loadPost() {
       try {
-        const data = await cmsFetch(`/posts/${params.id}/`);
+        const data = await cmsFetch<Record<string, unknown>>(`/posts/${params.id}/`);
         setPost(data);
       } catch (error) {
         console.error("Failed to load post", error);

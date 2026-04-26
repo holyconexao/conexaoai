@@ -25,13 +25,13 @@ export async function cmsFetch<T>(
   options?: RequestInit
 ): Promise<T> {
   const token = getCmsToken();
-  const headers: HeadersInit = {
-    ...(options?.headers || {}),
+  const headers: Record<string, string> = {
+    ...((options?.headers as Record<string, string> | undefined) ?? {}),
   };
 
   // Only set application/json if body is not FormData
-  if (!(options?.body instanceof FormData) && !('Content-Type' in headers)) {
-    (headers as any)["Content-Type"] = "application/json";
+  if (!(options?.body instanceof FormData) && !("Content-Type" in headers)) {
+    headers["Content-Type"] = "application/json";
   }
 
   if (token) {

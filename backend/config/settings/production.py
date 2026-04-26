@@ -12,6 +12,16 @@ for host in ("healthcheck.railway.app", os.environ.get("RAILWAY_PUBLIC_DOMAIN", 
     if host and host not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(host)
 
+# Trust Railway and custom domains for CSRF
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip()
+if railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{railway_domain}")
+
 DATABASES = {
     "default": dj_database_url.config(
         default=os.environ["DATABASE_URL"],
@@ -70,6 +80,6 @@ if sentry_dsn:
     sentry_sdk.init(
         dsn=sentry_dsn,
         integrations=[DjangoIntegration()],
-        traces_sample_rate=1.0,
-        send_default_pii=True
+        traces_sample_rate=0.1,
+        send_default_pii=False,
     )

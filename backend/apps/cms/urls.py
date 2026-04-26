@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     PostViewSet, CategoryViewSet, TagViewSet, 
     AuthorViewSet, MediaAssetViewSet, SubscriberViewSet,
-    current_cms_user
+    current_cms_user, track_click, click_stats
 )
 
 router = DefaultRouter()
@@ -19,5 +19,7 @@ urlpatterns = [
     path('auth/login/', TokenObtainPairView.as_view(), name='cms-login'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='cms-refresh'),
     path('me/', current_cms_user, name='cms-me'),
+    path('track-click/', track_click, name='cms-track-click'),
+    path('click-stats/', click_stats, name='cms-click-stats'),
     path('', include(router.urls)),
 ]

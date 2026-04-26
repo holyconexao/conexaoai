@@ -52,9 +52,9 @@ export default async function SearchPage({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
       <section className="max-w-3xl space-y-4">
-        <p className="text-sm uppercase tracking-[0.16em] text-[var(--accent-strong)]">Search</p>
+        <p className="text-sm uppercase tracking-[0.16em] text-primary">Search</p>
         <h1 className="font-display text-5xl leading-[0.98]">Find content by topic and intent.</h1>
-        <p className="text-lg leading-8 text-[var(--muted)]">
+        <p className="text-lg leading-8 text-muted-foreground">
           Search across AI, business systems, tools, monetization, guides and operating playbooks.
         </p>
       </section>
@@ -72,7 +72,7 @@ export default async function SearchPage({
             <h2 className="text-2xl font-semibold">
               {results.count} result{results.count === 1 ? "" : "s"} for &quot;{query}&quot;
             </h2>
-            <Link className="text-sm font-semibold text-[var(--accent-strong)]" href="/blog">
+            <Link className="text-sm font-semibold text-primary" href="/blog">
               View all articles
             </Link>
           </div>
@@ -83,13 +83,13 @@ export default async function SearchPage({
               ))}
             </div>
           ) : (
-            <div className="rounded-lg border border-[var(--line)] bg-[var(--card)] p-6 text-sm text-[var(--muted)]">
+            <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
               No article matched this search. Try a broader term or browse the main archive.
             </div>
           )}
         </section>
       ) : (
-        <div className="rounded-lg border border-[var(--line)] bg-[var(--card)] p-6 text-sm text-[var(--muted)]">
+        <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
           Type a term to search the published content.
         </div>
       )}

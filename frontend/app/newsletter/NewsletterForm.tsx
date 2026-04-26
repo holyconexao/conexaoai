@@ -3,7 +3,8 @@
 import type { FormEvent } from "react";
 import { useState, useTransition } from "react";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 
 export function NewsletterForm() {
@@ -33,17 +34,17 @@ export function NewsletterForm() {
   }
 
   return (
-    <form className="space-y-4 rounded-lg border border-[var(--line)] bg-[var(--card)] p-6" onSubmit={handleSubmit}>
+    <form className="space-y-4 rounded-lg border border-border bg-card p-6" onSubmit={handleSubmit}>
       <div className="grid gap-4 md:grid-cols-2">
-        <input
-          className="h-12 rounded-lg border border-[var(--line)] bg-white px-4 text-sm outline-none"
+        <Input
+          className="h-12"
           placeholder="Nome"
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
-        <input
+        <Input
           required
-          className="h-12 rounded-lg border border-[var(--line)] bg-white px-4 text-sm outline-none"
+          className="h-12"
           placeholder="Email"
           type="email"
           value={email}
@@ -54,7 +55,7 @@ export function NewsletterForm() {
         <Button disabled={isPending} type="submit">
           {isPending ? "Enviando..." : "Inscrever"}
         </Button>
-        {message ? <p className="text-sm text-[var(--muted)]">{message}</p> : null}
+        {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
       </div>
     </form>
   );

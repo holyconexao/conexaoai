@@ -3,9 +3,25 @@ from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions, filters, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def api_root(request):
+    return Response({
+        "name": "Conexão AI API",
+        "version": "1.0.0",
+        "endpoints": {
+            "posts": request.build_absolute_uri('posts/'),
+            "categories": request.build_absolute_uri('categories/'),
+            "tags": request.build_absolute_uri('tags/'),
+            "newsletter": "/api/newsletter/",
+            "cms": "/api/cms/",
+        }
+    })
 
 from .models import Category, Post, Tag
 from .serializers import (

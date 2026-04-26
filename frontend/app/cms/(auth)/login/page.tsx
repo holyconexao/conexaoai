@@ -45,8 +45,8 @@ export default function CmsLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <div className="mx-auto w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-2xl tracking-tight">CAI</span>
+          <div className="mx-auto w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-xl tracking-tight">CAI</span>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 tracking-tight">
             Backoffice Editorial

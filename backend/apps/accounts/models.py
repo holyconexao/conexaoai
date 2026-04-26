@@ -12,9 +12,9 @@ class AuthorProfile(models.Model):
     ROLE_CHOICES = (
         ('admin', 'Administrator'),
         ('manager', 'Manager'),
-        ('editor', 'Editor'),
+        ('user', 'User'),
     )
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='editor')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
 
     def __str__(self) -> str:
         return self.display_name or self.user.get_username()

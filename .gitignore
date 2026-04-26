@@ -1,18 +1,31 @@
-# Root project ignores
+# ──────────────────────────────
+# OS & IDE
+# ──────────────────────────────
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
+*.swp
 
-# Local env
+# ──────────────────────────────
+# Environment
+# ──────────────────────────────
 .env
-.env.*
+.env.local
+.env.*.local
 !.env.example
 
-# Python
+# ──────────────────────────────
+# Python / Django
+# ──────────────────────────────
 __pycache__/
 *.py[cod]
+*.pyo
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 # Backend artifacts
 backend/venv/
@@ -22,21 +35,24 @@ backend/media/
 backend/devserver.log
 backend/devserver.err.log
 
-# Frontend artifacts
+# Legacy scaffold (unused)
+backend/core/
+backend/blog/
+
+# ──────────────────────────────
+# Node / Next.js
+# ──────────────────────────────
+node_modules/
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+frontend/.vercel/
 frontend/devserver.log
 frontend/devserver.err.log
-frontend/.vercel/
 
-# IDE/tooling
-.idea/
-.vscode/
+# ──────────────────────────────
+# Local development artifacts
+# ──────────────────────────────
 opencode/
-
-# Project specifications
-/*.md
-!/README.md
 frontend/AGENTS.md
 frontend/CLAUDE.md
