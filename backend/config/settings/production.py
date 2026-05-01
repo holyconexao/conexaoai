@@ -6,11 +6,10 @@ from .base import *  # noqa: F403
 
 DEBUG = False
 ALLOWED_HOSTS = [
-    host.strip() for host in os.environ.get("ALLOWED_HOSTS", "").split(",") if host.strip()
+    host.strip() for host in os.environ.get("ALLOWED_HOSTS", "*").split(",") if host.strip()
 ]
-for host in ("healthcheck.railway.app", os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip()):
-    if host and host not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(host)
+# Allow all Railway domains
+ALLOWED_HOSTS.append(".railway.app")
 
 # Trust Railway and custom domains for CSRF
 CSRF_TRUSTED_ORIGINS = [
@@ -71,18 +70,7 @@ CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
 
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
-sentry_dsn = os.environ.get("SENTRY_DSN")
-if sentry_dsn:
-    sentry_sdk.init(
-        dsn=sentry_dsn,
-        integrations=[DjangoIntegration()],
-        traces_sample_rate=0.1,
-        send_default_pii=False,
-    )
-
+# Sentry was removed as per user request (custom monitoring used instead).
 import posthog
 
 POSTHOG_API_KEY = os.environ.get("POSTHOG_API_KEY")

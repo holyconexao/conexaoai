@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.newsletter",
     "apps.cms",
+    "apps.monitoring",
 ]
 
 MIDDLEWARE = [
@@ -43,6 +44,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "apps.monitoring.middleware.ErrorTrackingMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
