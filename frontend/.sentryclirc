@@ -1,0 +1,7 @@
+[auth]
+token=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
+
+[defaults]
+org=conexao-ai-frontend
+project=conexao-ai-frontend
+url=https://sentry.io

@@ -82,3 +82,12 @@ if sentry_dsn:
         traces_sample_rate=0.1,
         send_default_pii=False,
     )
+
+import posthog
+
+POSTHOG_API_KEY = os.environ.get("POSTHOG_API_KEY")
+POSTHOG_HOST = os.environ.get("POSTHOG_HOST", "https://app.posthog.com")
+
+if POSTHOG_API_KEY:
+    posthog.project_api_key = POSTHOG_API_KEY
+    posthog.host = POSTHOG_HOST
